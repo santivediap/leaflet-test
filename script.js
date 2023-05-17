@@ -1,17 +1,67 @@
-let userPosition = [];
+// Ejercicio 1
 
-navigator.geolocation.getCurrentPosition((pos) => {
-  let { coords } = pos;
-  userPosition.push(coords.latitude);
-  userPosition.push(coords.longitude);
-  let map = L.map("map").setView([coords.latitude, coords.longitude], 10);
-});
+const createMap = (arr) => {
+  var map = L.map("map").setView(arr, 13);
 
-// L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-//   maxZoom: 30,
-//   attribution:
-//     '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-// }).addTo(map);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 30,
+    attribution:
+      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+
+  const marker = L.marker(arr).addTo(map);
+};
+
+// let geo = navigator.geolocation;
+
+// geo.getCurrentPosition((pos) => {
+//   let { coords } = pos;
+//   let userPosition = [coords.latitude, coords.longitude];
+//   createMap(userPosition);
+// });
+
+// Ejercicio 2
+
+var map = L.map("map").setView([33.85934829711914, -118.2799301147461], 13);
+let markersLayer = L.layerGroup();
+
+const createLAMap = (arr, vehicles) => {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 30,
+    attribution:
+      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+  map.ad;
+  vehicles.forEach((ele) => {
+    L.marker([ele.lat, ele.long]).addTo(markersLayer);
+  });
+  markersLayer.addTo(map);
+};
+
+async function vehiclesCoords() {
+  let LACoords = [33.85934829711914, -118.2799301147461];
+
+  let search = await fetch(
+    "https://api.metro.net/LACMTA/vehicle_positions/all?geojson=false"
+  );
+  let data_search = await search.json();
+  let vehicles = data_search
+    .filter((val) => val.current_status === "IN_TRANSIT_TO")
+    .map((item) => {
+      let { position } = item;
+      let { latitude: lat, longitude: long } = position;
+      return { lat, long };
+    });
+  createLAMap(LACoords, vehicles);
+}
+
+vehiclesCoords();
+
+// setInterval(() => {
+//   markersLayer.remove();
+//   vehiclesCoords();
+// }, 3000);
+// https://api.metro.net/LACMTA/vehicle_positions/all?geojson=false
 
 // const marker = L.marker([51.505, -0.09]).addTo(map);
 
