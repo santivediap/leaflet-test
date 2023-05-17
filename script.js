@@ -8,22 +8,14 @@ const createMap = (arr) => {
     attribution:
       '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
-
+  
   const marker = L.marker(arr).addTo(map);
 };
-
-// let geo = navigator.geolocation;
-
-// geo.getCurrentPosition((pos) => {
-//   let { coords } = pos;
-//   let userPosition = [coords.latitude, coords.longitude];
-//   createMap(userPosition);
-// });
 
 // Ejercicio 2
 
 var map = L.map("map").setView([33.85934829711914, -118.2799301147461], 13);
-let markersLayer = L.layerGroup();
+let markersLayer = L.layerGroup({interactive: true});
 
 const createLAMap = (arr, vehicles) => {
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -33,7 +25,11 @@ const createLAMap = (arr, vehicles) => {
   }).addTo(map);
   map.ad;
   vehicles.forEach((ele) => {
-    L.marker([ele.lat, ele.long]).addTo(markersLayer);
+    let marker = L.marker([ele.lat, ele.long])
+    marker.on("click", function(event) {
+      marker.bindPopup(`Id del vehículo: ${ele.id}`).openPopup();
+    })
+    marker.addTo(markersLayer);
   });
   markersLayer.addTo(map);
 };
@@ -48,20 +44,20 @@ async function vehiclesCoords() {
   let vehicles = data_search
     .filter((val) => val.current_status === "IN_TRANSIT_TO")
     .map((item) => {
-      let { position } = item;
-      let { latitude: lat, longitude: long } = position;
-      return { lat, long };
+      let { position, vehicle } = item;
+      let { latitude: lat, longitude: long} = position;
+      let {vehicle_id: id} = vehicle
+      return { lat, long, id };
     });
   createLAMap(LACoords, vehicles);
 }
 
-vehiclesCoords();
+vehiclesCoords()
 
-// setInterval(() => {
-//   markersLayer.remove();
-//   vehiclesCoords();
-// }, 3000);
-// https://api.metro.net/LACMTA/vehicle_positions/all?geojson=false
+setInterval(() => {
+  markersLayer.remove()
+  vehiclesCoords()
+}, 3000);
 
 // const marker = L.marker([51.505, -0.09]).addTo(map);
 
